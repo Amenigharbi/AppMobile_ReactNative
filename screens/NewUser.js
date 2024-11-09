@@ -1,16 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
-import { ImageBackground, StyleSheet, Text, View, TouchableOpacity, BackHandler } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { useState, useRef } from 'react';
 
-export default function Authentification(props) {
+export default function NewUser({ navigation }) {  
   const [email, setEmail] = useState("Ameni@gmail.com");
   const [pwd, setPwd] = useState("123");
-  const refInput2 = useRef();
-
-  const handleExit = () => {
-    BackHandler.exitApp();
-  };
+  const [confirmPwd, setConfirmPwd] = useState(""); 
+  const refInputPwd = useRef();
+  const refInputConfirmPwd = useRef();
 
   return (
     <View style={styles.container}>
@@ -18,43 +16,58 @@ export default function Authentification(props) {
       <View style={styles.statusBar} />
       <ImageBackground source={require('../assets/image.png')} style={styles.backgroundImage}>
         <View style={styles.authContainer}>
-          <Text style={styles.authText}>Authentification</Text>
-          
+          <Text style={styles.authText}>New User</Text>
+
           <TextInput
             onChangeText={(text) => setEmail(text)}
-            onSubmitEditing={() => refInput2.current.focus()}
+            onSubmitEditing={() => refInputPwd.current.focus()}
             blurOnSubmit={false}
             keyboardType="email-address"
             placeholder="Email"
             style={styles.authTextInput}
           />
-          
+
           <TextInput
-            ref={refInput2}
+            ref={refInputPwd}
             onChangeText={(text) => setPwd(text)}
+            onSubmitEditing={() => refInputConfirmPwd.current.focus()}
+            blurOnSubmit={false}
             keyboardType="default"
             placeholder="Password"
             secureTextEntry={true}
             style={styles.authTextInput}
           />
-          
-          <TouchableOpacity style={styles.signInButton}
-           onPress={() => {
-            if (email === "Ameni@gmail.com" && pwd === "123") {
-              alert("Welcome!");
-            } else {
-              alert("Error!");
-            }
-           }}>
+
+          <TextInput
+            ref={refInputConfirmPwd}
+            onChangeText={(text) => setConfirmPwd(text)}
+            keyboardType="default"
+            placeholder="Confirm Password"
+            secureTextEntry={true}
+            style={styles.authTextInput}
+          />
+
+          <TouchableOpacity
+            style={styles.signInButton}
+            onPress={() => {
+              if (email === "Ameni@gmail.com" && pwd === "123" && pwd === confirmPwd) {
+                alert("Welcome!");
+              } else if (pwd !== confirmPwd) {
+                alert("Passwords do not match!");
+              } else {
+                alert("Error!");
+              }
+            }}
+          >
             <Text style={styles.buttonText}>Sign in</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity onPress={() => props.navigation.navigate("NewUser")}>
+
+          <TouchableOpacity onPress={() => alert("Welcome!")}>
             <Text style={{ fontWeight: "bold", color: "white" }}>Create new user</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
-            <Text style={styles.buttonText}>Exit</Text>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Text style={styles.buttonText}>Back</Text>
           </TouchableOpacity>
         </View>
       </ImageBackground>
@@ -84,7 +97,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     borderRadius: 8,
-    height: 300,
+    height: 400,
     width: '85%',
     backgroundColor: '#0005',
   },
@@ -112,9 +125,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 5,
   },
-  exitButton: {
+  backButton: {
     marginTop: 15,
-    backgroundColor: '#cc0000',
+    backgroundColor: '#333',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
