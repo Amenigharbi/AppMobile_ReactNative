@@ -38,16 +38,17 @@ export default function Authentification(props) {
             style={styles.authTextInput}
           />
           
-          <TouchableOpacity style={styles.signInButton}
-           onPress={() => {
-            if (email === "Ameni@gmail.com" && pwd === "123") {
-              alert("Welcome!");
-            } else {
-              alert("Error!");
-            }
-           }}>
-            <Text style={styles.buttonText}>Sign in</Text>
-          </TouchableOpacity>
+          <TouchableOpacity
+               style={styles.signInButton}
+               onPress={() => {
+               if (email === "Ameni@gmail.com" && pwd === "123") {
+               alert("Welcome!");
+                props.navigation.navigate("NewUser");  
+                } else {alert("Error!");}
+            }}>
+               <Text style={styles.buttonText}>Sign in</Text>
+           </TouchableOpacity>
+
           
           <TouchableOpacity onPress={() => props.navigation.navigate("NewUser")}>
             <Text style={{ fontWeight: "bold", color: "white" }}>Create new user</Text>

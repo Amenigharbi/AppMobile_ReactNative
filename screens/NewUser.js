@@ -2,10 +2,12 @@ import { StatusBar } from 'expo-status-bar';
 import { ImageBackground, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { useState, useRef } from 'react';
+import firebase from '../Config';
+const auth = firebase.auth();
 
 export default function NewUser({ navigation }) {  
-  const [email, setEmail] = useState("Ameni@gmail.com");
-  const [pwd, setPwd] = useState("123");
+  const [email, setEmail] = useState("");
+  const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState(""); 
   const refInputPwd = useRef();
   const refInputConfirmPwd = useRef();
@@ -19,6 +21,7 @@ export default function NewUser({ navigation }) {
           <Text style={styles.authText}>New User</Text>
 
           <TextInput
+            value={email}
             onChangeText={(text) => setEmail(text)}
             onSubmitEditing={() => refInputPwd.current.focus()}
             blurOnSubmit={false}
@@ -29,6 +32,7 @@ export default function NewUser({ navigation }) {
 
           <TextInput
             ref={refInputPwd}
+            value={pwd}
             onChangeText={(text) => setPwd(text)}
             onSubmitEditing={() => refInputConfirmPwd.current.focus()}
             blurOnSubmit={false}
@@ -40,6 +44,7 @@ export default function NewUser({ navigation }) {
 
           <TextInput
             ref={refInputConfirmPwd}
+            value={confirmPwd}
             onChangeText={(text) => setConfirmPwd(text)}
             keyboardType="default"
             placeholder="Confirm Password"
@@ -50,20 +55,20 @@ export default function NewUser({ navigation }) {
           <TouchableOpacity
             style={styles.signInButton}
             onPress={() => {
-              if (email === "Ameni@gmail.com" && pwd === "123" && pwd === confirmPwd) {
-                alert("Welcome!");
-              } else if (pwd !== confirmPwd) {
-                alert("Passwords do not match!");
+              if (pwd === confirmPwd) {
+                auth.createUserWithEmailAndPassword(email, pwd)
+                  .then(() => {
+                    navigation.replace("Acceuil");
+                  })
+                  .catch((err) => {
+                    alert(err.message);
+                  });
               } else {
-                alert("Error!");
+                alert("Passwords do not match!");
               }
             }}
           >
-            <Text style={styles.buttonText}>Sign in</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => alert("Welcome!")}>
-            <Text style={{ fontWeight: "bold", color: "white" }}>Create new user</Text>
+            <Text style={styles.buttonText}>Register</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
