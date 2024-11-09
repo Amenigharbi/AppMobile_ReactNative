@@ -2,7 +2,7 @@
 
 # dependencies
 node_modules/
-config/index.js 
+Config/index.js 
 # Expo
 .expo/
 dist/
