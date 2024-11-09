@@ -35,4 +35,4 @@ yarn-error.*
 *.tsbuildinfo
 
 # Config
-Config/index.js
+Config
