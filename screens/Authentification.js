@@ -14,26 +14,23 @@ export default function Authentification(props) {
   const auth = firebase.auth();
 
   useEffect(() => {
-    // Observer l'état de l'authentification
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         setCurrentUser(user);
-        fetchUsers(); // Charger les profils
+        fetchUsers();
       } else {
         setCurrentUser(null);
-        setUsers([]); // Réinitialiser la liste des utilisateurs quand il n'y a pas de connexion
+        setUsers([]);
       }
     });
 
-    return () => unsubscribe(); // Nettoyer l'observation
+    return () => unsubscribe();
   }, []);
 
-  // Quitter l'application
   const handleExit = () => {
     BackHandler.exitApp();
   };
 
-  // Connexion avec email et mot de passe
   const handleSignIn = () => {
     if (!email || !pwd) {
       Alert.alert("Erreur", "Veuillez entrer un email et un mot de passe.");
@@ -51,7 +48,6 @@ export default function Authentification(props) {
       });
   };
 
-  // Déconnexion
   const handleSignOut = () => {
     auth
       .signOut()
@@ -63,7 +59,6 @@ export default function Authentification(props) {
       });
   };
 
-  // Charger les utilisateurs
   const fetchUsers = () => {
     const db = firebase.firestore();
     db.collection("users")
@@ -84,7 +79,7 @@ export default function Authentification(props) {
     <View style={styles.container}>
       <StatusBar style="light" />
       <View style={styles.statusBar} />
-      <ImageBackground source={require("../assets/image.png")} style={styles.backgroundImage}>
+      <ImageBackground source={require("../assets/orag.jpg")} style={styles.backgroundImage}>
         <View style={styles.authContainer}>
           <Text style={styles.authText}>Authentification</Text>
 
@@ -109,11 +104,7 @@ export default function Authentification(props) {
             style={styles.authTextInput}
           />
 
-          <Button
-            mode="contained"
-            onPress={handleSignIn}
-            style={styles.signInButton}
-          >
+          <Button mode="contained" onPress={handleSignIn} style={styles.signInButton}>
             Se connecter
           </Button>
 
@@ -127,15 +118,9 @@ export default function Authentification(props) {
               <FlatList
                 data={users}
                 keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <Text style={styles.profileItem}>{item.email}</Text>
-                )}
+                renderItem={({ item }) => <Text style={styles.profileItem}>{item.email}</Text>}
               />
-              <Button
-                mode="contained"
-                onPress={handleSignOut}
-                style={styles.signOutButton}
-              >
+              <Button mode="contained" onPress={handleSignOut} style={styles.signOutButton}>
                 Se déconnecter
               </Button>
             </View>
@@ -167,6 +152,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flex: 1,
     width: "100%",
+    opacity: 0.8,  // Slight opacity for a cleaner look
   },
   authContainer: {
     alignItems: "center",
@@ -174,21 +160,31 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 20,
     width: "85%",
-    backgroundColor: "#0005",
+    backgroundColor: "#0005", // Transparent dark background for the card
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 8,
   },
   authText: {
-    fontSize: 24,
+    fontSize: 26,
     color: "#fff",
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 25,
   },
   authTextInput: {
     width: "100%",
-    marginBottom: 15,
+    marginBottom: 20,
+    paddingHorizontal: 15,
+    backgroundColor: "#fff",
   },
   signInButton: {
-    marginTop: 10,
+    marginTop: 20,
     backgroundColor: "#800040",
+    width: "100%",
+    paddingVertical: 12,
+    borderRadius: 5,
   },
   createUserLink: {
     marginTop: 15,
@@ -198,29 +194,35 @@ const styles = StyleSheet.create({
     color: "white",
   },
   profileContainer: {
-    marginTop: 20,
+    marginTop: 25,
     alignItems: "center",
     width: "100%",
   },
   profileTitle: {
-    fontSize: 18,
-    color: "white",
+    fontSize: 20,
+    color: "#fff",
     marginBottom: 10,
   },
   profileItem: {
     fontSize: 16,
-    color: "white",
+    color: "#fff",
+    marginVertical: 5,
   },
   signOutButton: {
-    marginTop: 20,
+    marginTop: 25,
     backgroundColor: "#cc0000",
+    width: "100%",
+    paddingVertical: 12,
+    borderRadius: 5,
   },
   exitButton: {
-    marginTop: 15,
+    marginTop: 20,
     backgroundColor: "#cc0000",
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 5,
+    alignItems: "center",
+    width: "60%",
   },
   buttonText: {
     color: "#fff",

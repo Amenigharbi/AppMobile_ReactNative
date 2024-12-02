@@ -34,8 +34,9 @@ export default function NewUser({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
-      <ImageBackground source={require('../assets/image.png')} style={styles.backgroundImage}>
+      {/* Set the status bar style to black */}
+      <StatusBar style="dark" />
+      <ImageBackground source={require('../assets/sign.jpg')} style={styles.backgroundImage}>
         <View style={styles.authContainer}>
           <Text style={styles.authText}>Nouvel Utilisateur</Text>
           <TextInput
@@ -78,12 +79,57 @@ export default function NewUser({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  backgroundImage: { flex: 1, justifyContent: 'center', width: '100%' },
-  authContainer: { alignItems: 'center', backgroundColor: '#0005', borderRadius: 8, width: '85%', padding: 20 },
-  authText: { fontSize: 24, color: '#fff', fontWeight: 'bold', marginBottom: 20 },
-  authTextInput: { height: 50, width: '90%', marginBottom: 15, borderBottomWidth: 1, textAlign: 'center' },
-  signInButton: { backgroundColor: '#800040', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 5 },
-  backButton: { backgroundColor: '#333', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 5 },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
+  container: { 
+    flex: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center' 
+  },
+  backgroundImage: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    width: '100%' 
+  },
+  authContainer: { 
+    alignItems: 'center', 
+    backgroundColor: '#0005', 
+    borderRadius: 8, 
+    width: '85%', 
+    padding: 20, 
+    justifyContent: 'center',
+    marginLeft: 30,  // Adding margin to the left
+  },
+  authText: { 
+    fontSize: 24, 
+    color: '#fff', 
+    fontWeight: 'bold', 
+    marginBottom: 20,
+    marginLeft: 20,  // Adding margin to the left of text
+  },
+  authTextInput: { 
+    height: 50, 
+    width: '90%', 
+    marginBottom: 15, 
+    borderBottomWidth: 1, 
+    textAlign: 'center',
+    marginLeft: 20,  // Adding margin to the left of input fields
+  },
+  signInButton: { 
+    backgroundColor: '#800040', 
+    paddingVertical: 10, 
+    paddingHorizontal: 20, 
+    borderRadius: 5,
+    marginBottom: 10,
+    marginLeft: 20,  
+  },
+  backButton: { 
+    backgroundColor: '#333', 
+    paddingVertical: 10, 
+    paddingHorizontal: 20, 
+    borderRadius: 5,
+    marginLeft: 20,  
+  },
+  buttonText: { 
+    color: '#fff', 
+    fontWeight: 'bold' 
+  },
 });

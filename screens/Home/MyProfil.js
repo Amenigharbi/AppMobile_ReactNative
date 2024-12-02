@@ -161,7 +161,7 @@ export default function MyProfil({ route }) {
 
   return (
     <ImageBackground
-      source={require("../../assets/cam.jpg")}
+      source={require("../../assets/imm.jpg")}
       style={styles.container}
     >
       <StatusBar style="light" />
@@ -219,8 +219,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    paddingTop: 80,
-    marginTop: 40,  // Add space at the top of the screen
+    paddingTop: 20,
+    marginTop: 30,  // Add space at the top of the screen
   },
   textHeader: {
     fontSize: 28,

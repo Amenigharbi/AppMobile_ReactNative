@@ -255,48 +255,48 @@ export default function Chat(props) {
 
 const styles = StyleSheet.create({
   messageImage: {
-    width: 200, // Adjust based on desired size
-    height: 200, // Adjust based on desired size
-    borderRadius: 10, // Optional: adds rounded corners
-    marginTop: 10, // Optional: adds margin to space it out
-    alignSelf: "center", // Centers the image
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    marginTop: 10,
+    alignSelf: "center",
   },
   container: {
     flex: 1,
-    backgroundColor: "#FAFAFA",
-    marginTop: 30, // Lighter neutral background for a softer feel
+    backgroundColor: "#F5F5F5", // Light gray for the background
+    marginTop: 30,
   },
   background: {
     flex: 1,
     resizeMode: 'cover',
-    position: 'absolute', // Ensure the background image stays fixed in the background
+    position: 'absolute',
     width: '100%',
     height: '100%',
   },
   headerContainer: {
     padding: 20,
-    backgroundColor: "#1F2A44", // Darker shade for the header, keeping it elegant
+    backgroundColor: "#8E7C4B", // Brownish background for the header
     borderBottomWidth: 1,
-    borderBottomColor: "#5F6D7E", // Lighter border for a subtle division
+    borderBottomColor: "#B8A68D", // Lighter brown border
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
   },
   header: {
-    color: "#F1C40F", // Warm yellow for a welcoming header color
-    fontSize: 26, // Increased font size for better readability
+    color: "#E67E22", // Orange header color
+    fontSize: 26,
     fontWeight: "bold",
     letterSpacing: 1,
   },
   chatContainer: {
     flex: 1,
-    paddingBottom: 60, // Adjusted bottom padding to reduce extra space for input area
+    paddingBottom: 60,
     paddingTop: 12,
-    backgroundColor: "#F4F6F7", // Soft background for chat area
-    borderTopLeftRadius: 30, // Rounded corners for the top of the chat area
+    backgroundColor: "#BDC3C7", // Soft gray background for the chat area
+    borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    overflow: "hidden", // Ensure content doesn't overflow the rounded corners
+    overflow: "hidden",
   },
   messageContainer: {
     padding: 15,
@@ -307,8 +307,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dateText: {
-    color: "#BDC3C7", // Softer gray for date text
-    fontSize: 14, // Increased font size for better readability
+    color: "#7F8C8D", // Gray for date text
+    fontSize: 14,
     fontStyle: "italic",
   },
   messageContent: {
@@ -316,29 +316,29 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#BDC3C7", // Light border to match the date text color
-    backgroundColor: "#E4E7E8", // Light gray for the message box
+    borderColor: "#BDC3C7", // Light gray border
+    backgroundColor: "#D5DBDB", // Lighter gray for the message box
     shadowColor: "#BDC3C7",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15, // Slightly more prominent shadow for depth
+    shadowOpacity: 0.15,
     shadowRadius: 8,
   },
   currentUserMessageContainer: {
-    backgroundColor: "#27AE60", // Fresh green for the current user's messages
+    backgroundColor: "#E67E22", // Orange for the current user's messages
     alignSelf: "flex-end",
     borderRadius: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2, // Increased shadow for more depth
+    shadowOpacity: 0.2,
     shadowRadius: 8,
   },
   secondUserMessageContainer: {
-    backgroundColor: "#3498DB", // Calming blue for the second user's messages
+    backgroundColor: "#8E7C4B", // Brown for the second user's messages
     alignSelf: "flex-start",
     borderRadius: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2, // Increased shadow for more depth
+    shadowOpacity: 0.2,
     shadowRadius: 8,
   },
   messageHeader: {
@@ -352,36 +352,36 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     marginRight: 10,
     borderWidth: 2,
-    borderColor: "#FFFFFF", // Crisp white border for user image
+    borderColor: "#FFFFFF", // White border for user image
   },
   userName: {
     fontWeight: "bold",
-    color: "#FFFFFF", // Clean white for user name text
-    fontSize: 16, // Slightly larger font for better readability
+    color: "#FFFFFF", // White for user name text
+    fontSize: 16,
     letterSpacing: 0.5,
   },
   messageTime: {
     fontSize: 12,
-    color: "#95A5A6", // Subtle gray for the message time
+    color: "#95A5A6", // Light gray for the message time
     marginLeft: "auto",
   },
   messageText: {
-    color: "#2C3E50", // Dark gray for message content for better readability
-    fontSize: 16, // Increased font size for better readability
-    lineHeight: 22, // Improved line height for clarity
+    color: "#2C3E50", // Dark gray for message content
+    fontSize: 16,
+    lineHeight: 22,
   },
   inputContainer: {
     flexDirection: "row",
     padding: 12,
-    backgroundColor: "#34495E", // Darker background for the input area
+    backgroundColor: "#8E7C4B", // Brownish background for input area
     borderTopWidth: 1,
-    borderTopColor: "#BDC3C7", // Matching border color
-    borderBottomLeftRadius: 30, // Rounded corners for the bottom of the input area
+    borderTopColor: "#BDC3C7", // Light gray border
+    borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
   input: {
     flex: 1,
-    backgroundColor: "#BDC3C7", // Light gray input box for better contrast
+    backgroundColor: "#BDC3C7", // Light gray input box
     color: "#FFFFFF", // White text for readability
     padding: 12,
     borderRadius: 30,
@@ -396,24 +396,24 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#7F8C8D", // Soft gray for icon buttons
     borderRadius: 20,
-    elevation: 3, // Slightly increased elevation for better depth
+    elevation: 3,
   },
   sendButton: {
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 15,
-    backgroundColor: "#2ECC71", // Fresh green for send button
+    backgroundColor: "#E67E22", // Orange for send button
     borderRadius: 30,
     padding: 12,
-    elevation: 4, // Subtle elevation for the send button
+    elevation: 4,
   },
   typingIndicator: {
     padding: 12,
-    backgroundColor: "#34495E", // Dark background for typing indicator
+    backgroundColor: "#8E7C4B", // Brown for typing indicator background
   },
   typingText: {
-    color: "#F1C40F", // Bright yellow for typing indicator text
+    color: "#E67E22", // Orange for typing indicator text
     fontSize: 14,
-    fontWeight: "bold", // Make the text bold for better emphasis
+    fontWeight: "bold",
   },
 });

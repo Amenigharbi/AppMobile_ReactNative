@@ -10,12 +10,12 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import firebase from "../../Config"; 
+import firebase from "../../Config"; // Import firebase configuration
 
 const database = firebase.database();
 
 export default function ListProfil({ route, navigation }) {
-  const { currentid } = route.params || {}; 
+  const { currentid } = route.params || {}; // Get current user ID from route params
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,6 +47,16 @@ export default function ListProfil({ route, navigation }) {
     });
   };
 
+  const handleLogout = () => {
+    firebase.auth().signOut()
+      .then(() => {
+        navigation.replace("Authentification");
+      })
+      .catch((error) => {
+        Alert.alert("Erreur", error.message); // Show any errors
+      });
+  };
+
   const renderUser = ({ item }) => {
     const isCurrentUser = item.id === currentid;
     return (
@@ -72,7 +82,7 @@ export default function ListProfil({ route, navigation }) {
 
   return (
     <ImageBackground
-      source={require("../../assets/fond.jpg")}
+      source={require("../../assets/back.jpg")}
       style={styles.container}
     >
       <Text style={styles.title}>Commencer à chatter avec</Text>
@@ -86,6 +96,11 @@ export default function ListProfil({ route, navigation }) {
           keyExtractor={(item) => item.id}
         />
       )}
+
+      {/* Logout Button */}
+      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+        <Text style={styles.logoutButtonText}>Déconnexion</Text>
+      </TouchableOpacity>
     </ImageBackground>
   );
 }
@@ -95,8 +110,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     backgroundColor: "#000",
-    justifyContent: "flex-start", // Aligner le contenu en haut de l'écran
-    paddingTop: 40, // Ajouter un espace en haut
+    justifyContent: "flex-start",
+    paddingTop: 40,
   },
   title: {
     fontSize: 36,
@@ -106,7 +121,7 @@ const styles = StyleSheet.create({
     textShadowColor: "#000",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 10,
-    textAlign: "center", // Centrer le titre
+    textAlign: "center",
   },
   profileCard: {
     flexDirection: "row",
@@ -125,7 +140,7 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     borderWidth: 2,
-    borderColor: "#ddd", 
+    borderColor: "#ddd",
   },
   profileDetails: {
     marginLeft: 15,
@@ -140,5 +155,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginTop: 2,
+  },
+  logoutButton: {
+    marginTop: 20,
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    backgroundColor: "#E67E22", // Orange color for logout button
+    borderRadius: 30,
+    elevation: 3,
+  },
+  logoutButtonText: {
+    fontSize: 18,
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
