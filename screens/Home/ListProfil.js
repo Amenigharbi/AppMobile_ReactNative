@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  FlatList,
+  SectionList,
   ImageBackground,
   StyleSheet,
   Text,
@@ -10,13 +10,13 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import firebase from "../../Config"; // Import firebase configuration
+import firebase from "../../Config"; 
 
 const database = firebase.database();
 
 export default function ListProfil({ route, navigation }) {
   const { currentid } = route.params || {}; // Get current user ID from route params
-  const [users, setUsers] = useState([]);
+  const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,7 +32,20 @@ export default function ListProfil({ route, navigation }) {
         const profile = child.val();
         usersList.push(profile);
       });
-      setUsers(usersList);
+
+      // Group users into sections
+      const groupedUsers = [
+        {
+          title: "Autres utilisateurs",
+          data: usersList.filter((user) => user.id !== currentid),
+        },
+        {
+          title: "Utilisateur connecté",
+          data: usersList.filter((user) => user.id === currentid),
+        },
+      ];
+
+      setSections(groupedUsers);
       setLoading(false);
     });
 
@@ -40,7 +53,9 @@ export default function ListProfil({ route, navigation }) {
   }, [currentid]);
 
   const handlePressProfile = (user) => {
-    const currentUser = users.find((u) => u.id === currentid);
+    const currentUser = sections
+      .find((section) => section.title === "Utilisateur connecté")
+      ?.data?.[0];
     navigation.navigate("Chat", {
       currentUser,
       secondUser: user,
@@ -53,32 +68,31 @@ export default function ListProfil({ route, navigation }) {
         navigation.replace("Authentification");
       })
       .catch((error) => {
-        Alert.alert("Erreur", error.message); // Show any errors
+        Alert.alert("Erreur", error.message); 
       });
   };
 
-  const renderUser = ({ item }) => {
-    const isCurrentUser = item.id === currentid;
-    return (
-      <TouchableOpacity
-        onPress={() => handlePressProfile(item)}
-        style={styles.profileCard}
-        key={item.id}
-      >
-        <Image
-          source={item.image ? { uri: item.image } : require("../../assets/fond.jpg")}
-          style={styles.profileImage}
-        />
-        <View style={styles.profileDetails}>
-          <Text style={styles.profileName}>
-            {item.pseudo} {isCurrentUser ? "(Utilisateur connecté)" : "(Non connecté)"}
-          </Text>
-          <Text style={styles.profileInfo}>{item.nom}</Text>
-          <Text style={styles.profileInfo}>{item.telephone}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const renderUser = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => handlePressProfile(item)}
+      style={styles.profileCard}
+      key={item.id}
+    >
+      <Image
+        source={item.image ? { uri: item.image } : require("../../assets/fond.jpg")}
+        style={styles.profileImage}
+      />
+      <View style={styles.profileDetails}>
+        <Text style={styles.profileName}>{item.pseudo}</Text>
+        <Text style={styles.profileInfo}>{item.nom}</Text>
+        <Text style={styles.profileInfo}>{item.telephone}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderSectionHeader = ({ section }) => (
+    <Text style={styles.sectionHeader}>{section.title}</Text>
+  );
 
   return (
     <ImageBackground
@@ -90,14 +104,14 @@ export default function ListProfil({ route, navigation }) {
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
-        <FlatList
-          data={users}
+        <SectionList
+          sections={sections}
           renderItem={renderUser}
+          renderSectionHeader={renderSectionHeader}
           keyExtractor={(item) => item.id}
         />
       )}
 
-      {/* Logout Button */}
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
         <Text style={styles.logoutButtonText}>Déconnexion</Text>
       </TouchableOpacity>
@@ -122,6 +136,15 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 10,
     textAlign: "center",
+  },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#E67E22",
+    marginVertical: 10,
+    textAlign: "left",
+    alignSelf: "stretch",
+    paddingHorizontal: 20,
   },
   profileCard: {
     flexDirection: "row",
@@ -160,7 +183,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingVertical: 15,
     paddingHorizontal: 30,
-    backgroundColor: "#E67E22", // Orange color for logout button
+    backgroundColor: "#E67E22", 
     borderRadius: 30,
     elevation: 3,
   },

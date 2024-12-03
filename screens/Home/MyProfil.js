@@ -133,31 +133,39 @@ export default function MyProfil({ route }) {
       Alert.alert("Error", "Please fill out all fields.");
       return;
     }
-
-    const imageLink = await uploadtoSupa();
-    if (!imageLink) return;
-
-    const ref_unprofil = database.ref("lesprofiles/unprofil" + currentid);
-    ref_unprofil
-      .set({
+  
+    try {
+      console.log("Uploading image to Supabase...");
+      const imageLink = await uploadtoSupa();
+      if (!imageLink) {
+        console.log("Image upload failed.");
+        Alert.alert("Error", "Image upload to Supabase failed.");
+        return;
+      }
+  
+      console.log("Image uploaded successfully: ", imageLink);
+  
+      const ref_unprofil = database.ref("lesprofiles/unprofil" + currentid);
+      console.log("Saving data to Firebase...");
+  
+      await ref_unprofil.set({
         id: currentid,
         nom,
         pseudo,
         telephone,
         image: imageLink,
-      })
-      .then(() => {
-        Alert.alert("Success", "Profile saved successfully.");
-        setNom("");
-        setPseudo("");
-        setTelephone("");
-        seturi_local_img(""); // Reset image
-      })
-      .catch((error) => {
-        Alert.alert("Error", error.message);
-        console.error("Error saving profile:", error);
       });
+  
+      console.log("Profile saved successfully in Firebase.");
+      Alert.alert("Success", "Profile saved successfully.");
+    } catch (error) {
+      console.error("Error in handleSave:", error);
+      Alert.alert("Error", "An unexpected error occurred.");
+    }
   };
+  
+  
+  
 
   return (
     <ImageBackground

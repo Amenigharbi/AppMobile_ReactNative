@@ -18,7 +18,6 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/database";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as Location from "expo-location";
-import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 
 export default function Chat(props) {
@@ -55,7 +54,7 @@ export default function Chat(props) {
     // Check if the content is empty
     if (!content || content.trim().length === 0) {
       Alert.alert("Erreur", "Vous ne pouvez pas envoyer de message vide.");
-      return; // Exit if message is empty
+      return; 
     }
   
     const key = discussionRef.push().key;
@@ -68,9 +67,9 @@ export default function Chat(props) {
     };
   
     discussionRef.child(key).set(messageData);
-    setMessage("");  // Clear the input field
-    setIsTyping(false);  // Reset typing indicator
-    typingRef.set(false);  // Reset typing status in database
+    setMessage("");  
+    setIsTyping(false); 
+    typingRef.set(false);  
   };
   
 
@@ -100,22 +99,13 @@ export default function Chat(props) {
     discussionRef.child(key).set(locationMessageData);
   };
 
-  const pickDocument = async () => {
-    const result = await DocumentPicker.getDocumentAsync({});
-    if (result.type === "success") {
-      console.log("Document selected:", result.uri);  // Log the selected document URI
-      handleSend("file", result.uri);
-    }
-  };
-  
-
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
     });
     if (!result.canceled) {
-      handleSend("image", result.assets[0].uri);  // Envoi de l'image via l'URI
+      handleSend("image", result.assets[0].uri);  
     }
   };
   
@@ -263,7 +253,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5", // Light gray for the background
+    backgroundColor: "#F5F5F5",
     marginTop: 30,
   },
   background: {
@@ -275,16 +265,16 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     padding: 20,
-    backgroundColor: "#8E7C4B", // Brownish background for the header
+    backgroundColor: "#8E7C4B", 
     borderBottomWidth: 1,
-    borderBottomColor: "#B8A68D", // Lighter brown border
+    borderBottomColor: "#B8A68D", 
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
   },
   header: {
-    color: "#E67E22", // Orange header color
+    color: "#E67E22", 
     fontSize: 26,
     fontWeight: "bold",
     letterSpacing: 1,
@@ -293,7 +283,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingBottom: 60,
     paddingTop: 12,
-    backgroundColor: "#BDC3C7", // Soft gray background for the chat area
+    backgroundColor: "#BDC3C7", 
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     overflow: "hidden",
@@ -307,7 +297,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dateText: {
-    color: "#7F8C8D", // Gray for date text
+    color: "#7F8C8D", 
     fontSize: 14,
     fontStyle: "italic",
   },
@@ -316,15 +306,15 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#BDC3C7", // Light gray border
-    backgroundColor: "#D5DBDB", // Lighter gray for the message box
+    borderColor: "#BDC3C7", 
+    backgroundColor: "#D5DBDB", 
     shadowColor: "#BDC3C7",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
   },
   currentUserMessageContainer: {
-    backgroundColor: "#E67E22", // Orange for the current user's messages
+    backgroundColor: "#E67E22", 
     alignSelf: "flex-end",
     borderRadius: 20,
     shadowColor: "#000",
@@ -333,7 +323,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   secondUserMessageContainer: {
-    backgroundColor: "#8E7C4B", // Brown for the second user's messages
+    backgroundColor: "#8E7C4B", 
     alignSelf: "flex-start",
     borderRadius: 20,
     shadowColor: "#000",
@@ -352,37 +342,37 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     marginRight: 10,
     borderWidth: 2,
-    borderColor: "#FFFFFF", // White border for user image
+    borderColor: "#FFFFFF", 
   },
   userName: {
     fontWeight: "bold",
-    color: "#FFFFFF", // White for user name text
+    color: "#FFFFFF", 
     fontSize: 16,
     letterSpacing: 0.5,
   },
   messageTime: {
     fontSize: 12,
-    color: "#95A5A6", // Light gray for the message time
+    color: "#95A5A6", 
     marginLeft: "auto",
   },
   messageText: {
-    color: "#2C3E50", // Dark gray for message content
+    color: "#2C3E50", 
     fontSize: 16,
     lineHeight: 22,
   },
   inputContainer: {
     flexDirection: "row",
     padding: 12,
-    backgroundColor: "#8E7C4B", // Brownish background for input area
+    backgroundColor: "#8E7C4B", 
     borderTopWidth: 1,
-    borderTopColor: "#BDC3C7", // Light gray border
+    borderTopColor: "#BDC3C7", 
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
   input: {
     flex: 1,
-    backgroundColor: "#BDC3C7", // Light gray input box
-    color: "#FFFFFF", // White text for readability
+    backgroundColor: "#BDC3C7", 
+    color: "#FFFFFF", 
     padding: 12,
     borderRadius: 30,
     fontSize: 16,
@@ -394,7 +384,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 12,
     padding: 10,
-    backgroundColor: "#7F8C8D", // Soft gray for icon buttons
+    backgroundColor: "#7F8C8D", 
     borderRadius: 20,
     elevation: 3,
   },
@@ -402,17 +392,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 15,
-    backgroundColor: "#E67E22", // Orange for send button
+    backgroundColor: "#E67E22", 
     borderRadius: 30,
     padding: 12,
     elevation: 4,
   },
   typingIndicator: {
     padding: 12,
-    backgroundColor: "#8E7C4B", // Brown for typing indicator background
+    backgroundColor: "#8E7C4B",
   },
   typingText: {
-    color: "#E67E22", // Orange for typing indicator text
+    color: "#E67E22", 
     fontSize: 14,
     fontWeight: "bold",
   },
