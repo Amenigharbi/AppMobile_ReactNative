@@ -8,7 +8,6 @@ import {
   TextInput,
   TouchableHighlight,
   Alert,
-  View,
 } from "react-native";
 import firebase from "../../Config";
 import * as ImagePicker from "expo-image-picker";
@@ -42,23 +41,25 @@ export default function MyProfil({ route }) {
       const blob = await response.blob();
       const arraybuffer = await new Response(blob).arrayBuffer();
 
+      // Upload image to Supabase storage
       const { data, error } = await supabase.storage
         .from("ProfileImages")
-        .upload(`${currentid}.jpg`, arraybuffer, { upsert: true });
+        .upload($`{currentid}`.jpg, arraybuffer, { upsert: true });
 
       if (error) {
         throw error;
       }
 
+      // Get public URL for the uploaded file
       const { publicURL, error: urlError } = supabase.storage
         .from("ProfileImages")
-        .getPublicUrl(`${currentid}.jpg`);
+        .getPublicUrl($`{currentid}`.jpg);
 
       if (urlError) {
         throw urlError;
       }
 
-      return publicURL;
+      return publicURL; // Return the public URL of the uploaded image
     } catch (error) {
       Alert.alert("Error", "Image upload failed.");
       console.error(error);
@@ -75,15 +76,6 @@ export default function MyProfil({ route }) {
     return true;
   };
 
-  const requestCameraPermissions = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Error", "Permission to access the camera is required.");
-      return false;
-    }
-    return true;
-  };
-
   const pickImage = async () => {
     try {
       const hasPermission = await requestPermissions();
@@ -94,6 +86,8 @@ export default function MyProfil({ route }) {
         aspect: [4, 3],
         quality: 1,
       });
+
+      console.log("ImagePicker result:", result);
 
       if (!result.canceled) {
         seturi_local_img(result.assets[0].uri);
@@ -106,117 +100,115 @@ export default function MyProfil({ route }) {
     }
   };
 
-  const takePhoto = async () => {
-    try {
-      const hasPermission = await requestCameraPermissions();
-      if (!hasPermission) return;
-
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        seturi_local_img(result.assets[0].uri);
-      } else {
-        console.log("User canceled the camera.");
-      }
-    } catch (error) {
-      console.error("Camera error:", error);
-      Alert.alert("Error", "Photo capture failed.");
-    }
-  };
-
   const handleSave = async () => {
+    console.log('Save button clicked'); // Vérifiez si la fonction est appelée
     if (!nom || !pseudo || !telephone) {
       Alert.alert("Error", "Please fill out all fields.");
+      console.log("Fields missing"); // Si les champs sont vides
       return;
     }
-  
-    try {
-      console.log("Uploading image to Supabase...");
-      const imageLink = await uploadtoSupa();
-      if (!imageLink) {
-        console.log("Image upload failed.");
-        Alert.alert("Error", "Image upload to Supabase failed.");
-        return;
-      }
-  
-      console.log("Image uploaded successfully: ", imageLink);
-  
-      const ref_unprofil = database.ref("lesprofiles/unprofil" + currentid);
-      console.log("Saving data to Firebase...");
-  
-      await ref_unprofil.set({
+
+    const imageLink = await uploadtoSupa();
+    if (!imageLink) {
+      console.log("Image upload failed");
+      return;
+    }
+
+    console.log("Image URL:", imageLink); // Vérifiez si l'URL de l'image est correcte
+
+    const ref_unprofil = database.ref("lesprofiles/unprofil" + currentid);
+    ref_unprofil
+      .set({
         id: currentid,
         nom,
         pseudo,
         telephone,
         image: imageLink,
+      })
+      .then(() => {
+        Alert.alert("Success", "Profile saved successfully.");
+        console.log("Profile saved successfully");
+        setNom("");
+        setPseudo("");
+        setTelephone("");
+        seturi_local_img("../../assets/3135823.png"); // Reset image to default
+      })
+      .catch((error) => {
+        Alert.alert("Error", error.message);
+        console.error("Error saving profile:", error);
       });
-  
-      console.log("Profile saved successfully in Firebase.");
-      Alert.alert("Success", "Profile saved successfully.");
-    } catch (error) {
-      console.error("Error in handleSave:", error);
-      Alert.alert("Error", "An unexpected error occurred.");
-    }
   };
-  
-  
-  
 
   return (
     <ImageBackground
-      source={require("../../assets/imm.jpg")}
+      source={require("../../assets/hhh.jpg")}
       style={styles.container}
     >
       <StatusBar style="light" />
       <Text style={styles.textHeader}>My Account</Text>
-      <View style={styles.imageContainer}>
-        <TouchableHighlight onPress={pickImage}>
-          <Image
-            source={
-              uri_local_img
-                ? { uri: uri_local_img }
-                : require("../../assets/3135823.png")
-            }
-            style={styles.profileImage}
-          />
-        </TouchableHighlight>
-        <TouchableHighlight onPress={takePhoto}>
-          <Text style={styles.cameraButton}>Take Photo</Text>
-        </TouchableHighlight>
-      </View>
-
+      <TouchableHighlight onPress={pickImage}>
+        <Image
+          source={
+            uri_local_img
+              ? { uri: uri_local_img }
+              : require("../../assets/3135823.png")
+          }
+          style={styles.profileImage}
+        />
+      </TouchableHighlight>
       <TextInput
         value={nom}
         onChangeText={setNom}
+        textAlign="center"
+        placeholderTextColor="#fff"
         placeholder="Nom"
+        keyboardType="default"
         style={styles.textInput}
       />
       <TextInput
         value={pseudo}
         onChangeText={setPseudo}
+        textAlign="center"
+        placeholderTextColor="#fff"
         placeholder="Pseudo"
+        keyboardType="default"
         style={styles.textInput}
       />
       <TextInput
         value={telephone}
         onChangeText={setTelephone}
+        placeholderTextColor="#fff"
+        textAlign="center"
         placeholder="Numero"
         keyboardType="phone-pad"
         style={styles.textInput}
       />
-
+    
       <TouchableHighlight
-        onPress={handleSave}
-        style={styles.saveButton}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.saveButtonText}>Save</Text>
-      </TouchableHighlight>
+  onPress={() => {
+    const ref_unprofil = database.ref("lesprofiles/unprofil" + currentid);
+    ref_unprofil
+      .set({
+        id: currentid,
+        nom,
+        pseudo,
+        telephone,
+        image: uri_local_img || "http://dummyimage.com/600x400/000/fff", 
+      })
+      .then(() => {
+        Alert.alert("Success", "Profile saved successfully.");
+      })
+      .catch((error) => {
+        Alert.alert("Error", error.message);
+      });
+  }}
+  activeOpacity={0.5}
+  underlayColor="#DDDDDD"
+  style={styles.saveButton}
+>
+  <Text style={styles.saveButtonText}>Save</Text>
+</TouchableHighlight>
+
     </ImageBackground>
   );
 }
@@ -224,68 +216,44 @@ export default function MyProfil({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    paddingTop: 20,
-    marginTop: 30,  // Add space at the top of the screen
+    justifyContent: "center",
   },
   textHeader: {
-    fontSize: 28,
-    color: "#fff", // White text color
+    fontSize: 40,
+    color: "#07f",
     fontWeight: "bold",
-    marginBottom: 12,
-    backgroundColor: "#09f", // Button-like background color
-    paddingVertical: 10, // Add vertical padding for the button-like effect
-    paddingHorizontal: 20, // Add horizontal padding for the button-like effect
-    borderRadius: 20, // Rounded corners to make it look like a button
-    textAlign: "center", // Center the text inside the "button"
-  },
-  
-  imageContainer: {
     marginBottom: 20,
-    alignItems: "center",
   },
   profileImage: {
     borderRadius: 100,
-    height: 180,
-    width: 180,
-    marginBottom: 10,
-    borderWidth: 5,
-    borderColor: "#07f",
-    backgroundColor: "#fff",
-  },
-  cameraButton: {
-    color: "#fff",
-    backgroundColor: "#08f6",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    fontSize: 16,
+    height: 200,
+    width: 200,
+    marginBottom: 20,
   },
   textInput: {
-    backgroundColor: "#fff4",
-    color: "#fff",
-    width: "80%",
-    height: 50,
-    borderRadius: 10,
-    marginVertical: 10,
-    fontSize: 18,
-    paddingHorizontal: 15,
-  },
-  saveButton: {
-    backgroundColor: "#000", // Change the background color to black
-    borderRadius: 8,
-    height: 50,
-    width: "60%",
-    justifyContent: "center",
-    alignItems: "center",
-   
-    borderWidth: 2,
-    borderColor: "#fff",
-  },
-  saveButtonText: {
+    backgroundColor: "#0004",
     fontSize: 20,
     color: "#fff",
+    width: "75%",
+    height: 50,
+    borderRadius: 10,
+    margin: 5,
+    paddingHorizontal: 10,
   },
-});
+  saveButton: {
+    borderColor: "#00f",
+    borderWidth: 2,
+    backgroundColor: "#08f6",
+    height: 60,
+    width: "50%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 5,
+    marginTop: 20,
+  },
+  saveButtonText: {
+    color: "#FFF",
+    fontSize: 24,
+  },
+}); 
