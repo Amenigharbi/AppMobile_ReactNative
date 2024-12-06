@@ -80,20 +80,49 @@ export default function MyProfil({ route }) {
     try {
       const hasPermission = await requestPermissions();
       if (!hasPermission) return;
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      console.log("ImagePicker result:", result);
-
-      if (!result.canceled) {
-        seturi_local_img(result.assets[0].uri);
-      } else {
-        console.log("User canceled the image picker.");
-      }
+  
+      const action = await Alert.alert(
+        "Select Image",
+        "Do you want to take a photo or pick from the gallery?",
+        [
+          {
+            text: "Camera",
+            onPress: async () => {
+              const result = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1,
+              });
+  
+              if (!result.canceled) {
+                seturi_local_img(result.assets[0].uri);
+              } else {
+                console.log("User canceled the image picker.");
+              }
+            },
+          },
+          {
+            text: "Gallery",
+            onPress: async () => {
+              const result = await ImagePicker.launchImageLibraryAsync({
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1,
+              });
+  
+              if (!result.canceled) {
+                seturi_local_img(result.assets[0].uri);
+              } else {
+                console.log("User canceled the image picker.");
+              }
+            },
+          },
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+        ]
+      );
     } catch (error) {
       console.error("ImagePicker error:", error);
       Alert.alert("Error", "Image selection failed.");
@@ -101,21 +130,21 @@ export default function MyProfil({ route }) {
   };
 
   const handleSave = async () => {
-    console.log('Save button clicked'); // Vérifiez si la fonction est appelée
+    console.log('Save button clicked'); 
     if (!nom || !pseudo || !telephone) {
-      Alert.alert("Error", "Please fill out all fields.");
-      console.log("Fields missing"); // Si les champs sont vides
+      Alert.alert("Missing Fields", "Please fill out all fields before saving.");
+      console.log("Fields missing"); // If the fields are empty
       return;
     }
-
+  
     const imageLink = await uploadtoSupa();
     if (!imageLink) {
       console.log("Image upload failed");
       return;
     }
-
-    console.log("Image URL:", imageLink); // Vérifiez si l'URL de l'image est correcte
-
+  
+    console.log("Image URL:", imageLink); // Check if the image URL is correct
+  
     const ref_unprofil = database.ref("lesprofiles/unprofil" + currentid);
     ref_unprofil
       .set({
@@ -131,17 +160,18 @@ export default function MyProfil({ route }) {
         setNom("");
         setPseudo("");
         setTelephone("");
-        seturi_local_img("../../assets/3135823.png"); // Reset image to default
+        seturi_local_img("../../assets/3135823.png"); 
       })
       .catch((error) => {
         Alert.alert("Error", error.message);
         console.error("Error saving profile:", error);
       });
   };
+  
 
   return (
     <ImageBackground
-      source={require("../../assets/hhh.jpg")}
+      source={require("../../assets/imm.jpg")}
       style={styles.container}
     >
       <StatusBar style="light" />
@@ -184,8 +214,15 @@ export default function MyProfil({ route }) {
         style={styles.textInput}
       />
     
-      <TouchableHighlight
+    <TouchableHighlight
   onPress={() => {
+    // Check if any required field is empty
+    if (!nom || !pseudo || !telephone) {
+      Alert.alert("Missing Fields", "Please fill out all fields before saving.");
+      return;  // Exit the function if fields are missing
+    }
+
+    // Proceed to save the profile if all fields are filled
     const ref_unprofil = database.ref("lesprofiles/unprofil" + currentid);
     ref_unprofil
       .set({
@@ -193,7 +230,7 @@ export default function MyProfil({ route }) {
         nom,
         pseudo,
         telephone,
-        image: uri_local_img || "http://dummyimage.com/600x400/000/fff", 
+        image: uri_local_img || "http://dummyimage.com/600x400/000/fff",  // Use default image if no image selected
       })
       .then(() => {
         Alert.alert("Success", "Profile saved successfully.");
@@ -209,6 +246,7 @@ export default function MyProfil({ route }) {
   <Text style={styles.saveButtonText}>Save</Text>
 </TouchableHighlight>
 
+
     </ImageBackground>
   );
 }
@@ -220,7 +258,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   textHeader: {
-    fontSize: 40,
+    fontSize: 30,
     color: "#07f",
     fontWeight: "bold",
     marginBottom: 20,
@@ -245,7 +283,7 @@ const styles = StyleSheet.create({
     borderColor: "#00f",
     borderWidth: 2,
     backgroundColor: "#08f6",
-    height: 60,
+    height: 40,
     width: "50%",
     justifyContent: "center",
     alignItems: "center",

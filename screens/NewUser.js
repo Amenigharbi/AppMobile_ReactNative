@@ -27,7 +27,7 @@ export default function NewUser({ navigation }) {
       .createUserWithEmailAndPassword(email, pwd)
       .then(() => {
         const currentid = auth.currentUser.uid;
-        navigation.replace('Authentification', { currentid });
+        navigation.replace('Acceuil', { currentid });
       })
       .catch((err) => alert(err.message));
   };

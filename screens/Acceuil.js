@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // Importer
 import ListProfil from './Home/ListProfil';
 import Groupe from './Home/Groupe';
 import MyProfils from './Home/MyProfil';
-import Chat from './Chat'; // Importer l'écran Chat
+import Chat from './Chat'; 
 
 export default function Acceuil(props) {
   const Tab = createMaterialBottomTabNavigator();
@@ -30,6 +30,7 @@ export default function Acceuil(props) {
       <Tab.Screen
         name="Group"
         component={Groupe}
+        initialParams={{ currentid: currentid }}
         options={{
           tabBarLabel: 'Groups',
           tabBarIcon: ({ color }) => (
@@ -59,6 +60,7 @@ export default function Acceuil(props) {
           ),
         }}
       />
+
     </Tab.Navigator>
   );
 }

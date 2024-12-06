@@ -4,12 +4,14 @@ import { ImageBackground, StyleSheet, Text, View, TouchableOpacity, BackHandler,
 import { Button, TextInput } from "react-native-paper";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
+import "firebase/compat/firestore";
 
 export default function Authentification(props) {
   const [email, setEmail] = useState("Ameni@gmail.com");
   const [pwd, setPwd] = useState("1234567");
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [groups, setGroups] = useState([]);  // Liste des groupes auxquels l'utilisateur appartient
   const refInput2 = useRef();
   const auth = firebase.auth();
 
@@ -18,9 +20,11 @@ export default function Authentification(props) {
       if (user) {
         setCurrentUser(user);
         fetchUsers();
+        fetchUserGroups(user.uid);  // Charger les groupes de l'utilisateur
       } else {
         setCurrentUser(null);
         setUsers([]);
+        setGroups([]);
       }
     });
 
@@ -75,6 +79,24 @@ export default function Authentification(props) {
       });
   };
 
+  // Fonction pour récupérer les groupes de l'utilisateur
+  const fetchUserGroups = (userId) => {
+    const db = firebase.firestore();
+    db.collection("groups") // Remplacez "groups" par votre collection de groupes
+      .where("members", "array-contains", userId) // Récupérer les groupes où l'utilisateur est membre
+      .get()
+      .then((querySnapshot) => {
+        const userGroups = [];
+        querySnapshot.forEach((doc) => {
+          userGroups.push(doc.data());
+        });
+        setGroups(userGroups);
+      })
+      .catch((error) => {
+        console.error("Erreur lors du chargement des groupes: ", error);
+      });
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -120,6 +142,21 @@ export default function Authentification(props) {
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item }) => <Text style={styles.profileItem}>{item.email}</Text>}
               />
+
+              <Text style={styles.profileTitle}>Groupes auxquels vous appartenez :</Text>
+              <FlatList
+                data={groups}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    onPress={() => props.navigation.navigate("GroupChat", { groupId: item.id })}
+                    style={styles.groupItem}
+                  >
+                    <Text style={styles.profileItem}>{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+
               <Button mode="contained" onPress={handleSignOut} style={styles.signOutButton}>
                 Se déconnecter
               </Button>
@@ -135,7 +172,31 @@ export default function Authentification(props) {
   );
 }
 
+
 const styles = StyleSheet.create({
+  profileContainer: {
+    marginTop: 25,
+    alignItems: "center",
+    width: "100%",
+  },
+  profileTitle: {
+    fontSize: 20,
+    color: "#fff",
+    marginBottom: 10,
+  },
+  profileItem: {
+    fontSize: 16,
+    color: "#fff",
+    marginVertical: 5,
+  },
+  groupItem: {
+    fontSize: 16,
+    color: "#fff",
+    marginVertical: 5,
+    backgroundColor: "#333",  // Optionnel : pour ajouter du fond sur les éléments de groupe
+    padding: 10,
+    borderRadius: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: "#f09",

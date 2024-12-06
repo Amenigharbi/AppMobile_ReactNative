@@ -72,23 +72,31 @@ export default function ListProfil({ route, navigation }) {
       });
   };
 
-  const renderUser = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => handlePressProfile(item)}
-      style={styles.profileCard}
-      key={item.id}
-    >
-      <Image
-        source={item.image ? { uri: item.image } : require("../../assets/fond.jpg")}
-        style={styles.profileImage}
-      />
-      <View style={styles.profileDetails}>
-        <Text style={styles.profileName}>{item.pseudo}</Text>
-        <Text style={styles.profileInfo}>{item.nom}</Text>
-        <Text style={styles.profileInfo}>{item.telephone}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderUser = ({ item }) => {
+    // Define online/offline status (this can be dynamically set based on user activity)
+    const isOnline = item.id === currentid ? true : false;  // Example logic
+
+    return (
+      <TouchableOpacity
+        onPress={() => handlePressProfile(item)}
+        style={styles.profileCard}
+        key={item.id}
+      >
+        <Image
+          source={item.image ? { uri: item.image } : require("../../assets/fond.jpg")}
+          style={styles.profileImage}
+        />
+        <View style={styles.profileDetails}>
+          <Text style={styles.profileName}>{item.pseudo}</Text>
+          <Text style={styles.profileInfo}>{item.nom}</Text>
+          <Text style={styles.profileInfo}>{item.telephone}</Text>
+        </View>
+        <View
+          style={[styles.statusDot, { backgroundColor: isOnline ? "green" : "red" }]}
+        />
+      </TouchableOpacity>
+    );
+  };
 
   const renderSectionHeader = ({ section }) => (
     <Text style={styles.sectionHeader}>{section.title}</Text>
@@ -157,6 +165,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 5,
     elevation: 3,
+    alignItems: "center",
   },
   profileImage: {
     width: 70,
@@ -178,6 +187,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginTop: 2,
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginLeft: "auto",
+    marginRight: 10,
   },
   logoutButton: {
     marginTop: 20,

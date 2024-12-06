@@ -39,7 +39,7 @@ export default function Chat(props) {
   const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
-
+  
   const db = firebase.database();
   const discussionsRef = db.ref("lesdiscussions");
   const discussionRef = discussionsRef.child(
@@ -64,6 +64,7 @@ export default function Chat(props) {
       time: new Date().toISOString(),
       sender: currentUser.id,
       receiver: secondUser.id,
+      isRead: false,
     };
   
     discussionRef.child(key).set(messageData);
@@ -163,12 +164,16 @@ export default function Chat(props) {
     item.body
   )}
 </Text>
-
-        </Animated.View>
-      </View>
-    );
+        {/* Afficher "Vu" ou "Non lu" */}
+        {item.isRead ? (
+          <Text style={styles.messageStatus}>Vu</Text>
+        ) : (
+          <Text style={styles.messageStatus}>Non lu</Text>
+        )}
+      </Animated.View>
+    </View>
+  );
 };
-
   
 
   useEffect(() => {
@@ -176,12 +181,16 @@ export default function Chat(props) {
     const onValueChange = discussionRef.on("value", (snapshot) => {
       const messages = [];
       snapshot.forEach((msgSnapshot) => {
-        messages.push(msgSnapshot.val());
-      });
-      setChatMessages(messages);
-      setLoading(false);
+        const message = msgSnapshot.val();
+      // Si le destinataire est l'utilisateur actuel et que le message n'a pas été vu, on le marque comme vu
+      if (message.receiver === currentUser.id && !message.isRead) {
+        discussionRef.child(msgSnapshot.key).update({ isRead: true });
+      }
+      messages.push(message);
     });
-
+    setChatMessages(messages);
+    setLoading(false);
+  });
     const onTypingChange = typingRef.on("value", (snapshot) => {
       const typingStatus = snapshot.val();
       setOtherUserTyping(typingStatus === true);
@@ -244,6 +253,15 @@ export default function Chat(props) {
 }
 
 const styles = StyleSheet.create({
+  messageContainer: {
+    padding: 15,
+    justifyContent: 'center',
+  },
+  messageStatus: {
+    fontSize: 12,
+    color: "#95A5A6", // Couleur gris pour le texte de statut
+    marginTop: 5,
+  },
   messageImage: {
     width: 200,
     height: 200,
