@@ -1,117 +1,151 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
-import firebase from '../../Config'; // Assurez-vous que votre configuration Firebase est correcte
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
+import firebase from '../../Config';
 
 const database = firebase.database();
 
 export default function Groupe({ navigation }) {
+  const [groups, setGroups] = useState([]);
+  const [myGroups, setMyGroups] = useState([]);
   const [users, setUsers] = useState([]);
+  const [newGroupName, setNewGroupName] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const currentUser = firebase.auth().currentUser;
 
   useEffect(() => {
-    // Récupérer l'ID de l'utilisateur connecté
-    const currentUser = firebase.auth().currentUser;
-    if (currentUser) {
-      setCurrentUserId(currentUser.uid);
-    }
+    // Fetch groups
+    const fetchGroups = () => {
+      const groupsRef = database.ref('lesdiscussions');
+      groupsRef.on('value', (snapshot) => {
+        const fetchedGroups = [];
+        snapshot.forEach((child) => {
+          fetchedGroups.push({ id: child.key, ...child.val() });
+        });
+        setGroups(fetchedGroups);
 
-    // Charger les utilisateurs depuis Firebase
-    const refProfiles = database.ref('lesprofiles');
-    refProfiles.on('value', (snapshot) => {
-      const fetchedUsers = [];
-      snapshot.forEach((child) => {
-        const user = child.val();
-        fetchedUsers.push(user);
+        const userGroups = fetchedGroups.filter((group) =>
+          Array.isArray(group.participants) && group.participants.includes(currentUser.uid)
+        );
+        setMyGroups(userGroups);
       });
-      setUsers(fetchedUsers);
-    });
-
-    return () => refProfiles.off('value'); // Nettoyer l'écouteur Firebase
-  }, []);
-
-  const handleSelectUser = (user) => {
-    // Ajouter ou retirer un utilisateur de la sélection
-    setSelectedUsers((prev) => {
-      if (prev.some((u) => u.id === user.id)) {
-        return prev.filter((u) => u.id !== user.id); // Désélectionner
-      }
-      return [...prev, user]; // Sélectionner
-    });
-  };
-
-  const handleCreateGroup = async () => {
-    if (selectedUsers.length < 2) {
-      Alert.alert('Erreur', 'Sélectionnez au moins deux utilisateurs pour créer un groupe.');
-      return;
-    }
-
-    // Créer une nouvelle conversation de groupe
-    const groupRef = database.ref('lesdiscussions').push(); // Crée un nouvel identifiant pour la discussion
-    const groupId = groupRef.key;
-
-    // Ajouter les utilisateurs à la discussion de groupe
-    const groupData = {
-      participants: selectedUsers.map((user) => user.id), // ID des utilisateurs dans le groupe
-      groupName: `Groupe ${selectedUsers.length} utilisateurs`,
-      createdBy: currentUserId,
-      timeCreated: new Date().toISOString(),
     };
 
-    // Sauvegarder les informations de groupe dans la base de données
-    groupRef.set(groupData);
+    // Fetch users
+    const fetchUsers = () => {
+      const usersRef = database.ref('lesprofiles');
+      usersRef.on('value', (snapshot) => {
+        const fetchedUsers = [];
+        snapshot.forEach((child) => {
+          fetchedUsers.push({ id: child.key, ...child.val() });
+        });
+        console.log(fetchedUsers);
+        setUsers(fetchedUsers);
+      });
+    };
 
-    // Naviguer vers le chat de groupe
-    navigation.navigate('Chat', { groupId, selectedUsers });
+    fetchGroups();
+    fetchUsers();
+
+    return () => {
+      database.ref('lesdiscussions').off('value');
+      database.ref('lesprofiles').off('value');
+    };
+  }, [currentUser.uid]);
+
+  const handleNavigateToChat = (groupId) => {
+    navigation.navigate('ChatGroup', { groupId });
   };
 
-  const handleOpenChat = () => {
-    if (selectedUsers.length < 2) {
-      Alert.alert('Erreur', 'Sélectionnez au moins deux utilisateurs pour créer un groupe.');
+  const handleCreateGroup = () => {
+    if (!newGroupName.trim()) {
+      Alert.alert('Erreur', 'Veuillez entrer un nom de groupe.');
+      return;
+    }
+    if (selectedUsers.length === 0) {
+      Alert.alert('Erreur', 'Veuillez sélectionner au moins un utilisateur.');
       return;
     }
 
-    handleCreateGroup();
+    const groupData = {
+      groupName: newGroupName,
+      participants: [...selectedUsers, currentUser.uid], // Include current user
+    };
+
+    database
+      .ref('lesdiscussions')
+      .push(groupData)
+      .then(() => {
+        Alert.alert('Succès', 'Groupe créé avec succès !');
+        setNewGroupName('');
+        setSelectedUsers([]);
+      })
+      .catch((error) => {
+        Alert.alert('Erreur', `Impossible de créer le groupe : ${error.message}`);
+      });
   };
 
-  const renderUser = ({ item }) => {
-    // Ne pas afficher l'utilisateur connecté dans la liste
-    if (item.id === currentUserId) {
-      return null;
+  const toggleUserSelection = (userId) => {
+    if (selectedUsers.includes(userId)) {
+      setSelectedUsers(selectedUsers.filter((id) => id !== userId));
+    } else {
+      setSelectedUsers([...selectedUsers, userId]);
     }
-
-    const isSelected = selectedUsers.some((user) => user.id === item.id);
-
-    return (
-      <TouchableOpacity
-        onPress={() => handleSelectUser(item)}
-        style={[styles.groupItem, isSelected && styles.selectedGroupItem]}
-      >
-        <Text style={styles.groupText}>{item.pseudo || 'Utilisateur'}</Text>
-      </TouchableOpacity>
-    );
   };
+
+  const renderGroup = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => handleNavigateToChat(item.id)}
+      style={styles.groupItem}
+    >
+      <Text style={styles.groupText}>{item.groupName || 'Groupe'}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderUser = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => toggleUserSelection(item.id)}
+      style={[
+        styles.userItem,
+        selectedUsers.includes(item.id) && styles.selectedUserItem,
+      ]}
+    >
+      <Text style={styles.userText}>{item.nom || 'Utilisateur'}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sélectionnez des utilisateurs</Text>
+      <Text style={styles.title}>Mes Groupes</Text>
+      {myGroups.length > 0 ? (
+        <FlatList
+          data={myGroups}
+          keyExtractor={(item) => item.id}
+          renderItem={renderGroup}
+        />
+      ) : (
+        <Text style={styles.noGroupText}>Vous n'êtes membre d'aucun groupe.</Text>
+      )}
+
+      <Text style={styles.sectionTitle}>Créer un Groupe</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Nom du groupe"
+        value={newGroupName}
+        onChangeText={setNewGroupName}
+      />
       <FlatList
         data={users}
         keyExtractor={(item) => item.id}
         renderItem={renderUser}
+        style={styles.userList}
       />
-      <TouchableOpacity
-        style={styles.chatButton}
-        onPress={handleOpenChat}
-        disabled={selectedUsers.length < 2}
-      >
-        <Text style={styles.chatButtonText}>
-          {selectedUsers.length < 2 ? 'Sélectionnez des utilisateurs' : 'Créer un Groupe'}
-        </Text>
+      <TouchableOpacity style={styles.createGroupButton} onPress={handleCreateGroup}>
+        <Text style={styles.createGroupButtonText}>Créer un Groupe</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -135,23 +169,56 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#cc8c58',
   },
-  selectedGroupItem: {
-    backgroundColor: '#cc8c58',
-    borderColor: '#8c4d26',
-  },
   groupText: {
     fontSize: 18,
     color: '#4a3f35',
     fontWeight: '500',
   },
-  chatButton: {
+  noGroupText: {
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 30,
+    color: '#a64b2a',
+  },
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginVertical: 10,
+  },
+  userList: {
+    maxHeight: 150,
+    marginVertical: 10,
+  },
+  userItem: {
+    padding: 15,
+    marginVertical: 5,
+    backgroundColor: '#e0f7fa',
+    borderRadius: 8,
+  },
+  selectedUserItem: {
+    backgroundColor: '#4dd0e1',
+  },
+  userText: {
+    fontSize: 16,
+    color: '#00796b',
+  },
+  createGroupButton: {
     marginTop: 20,
     paddingVertical: 15,
     backgroundColor: '#cc8c58',
     borderRadius: 12,
     alignItems: 'center',
   },
-  chatButtonText: {
+  createGroupButtonText: {
     fontSize: 18,
     color: '#fff',
     fontWeight: 'bold',

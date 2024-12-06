@@ -23,7 +23,7 @@ export default function MyProfil({ route }) {
   const [uri_local_img, seturi_local_img] = useState("");
 
   useEffect(() => {
-    const ref = database.ref("lesprofiles/unprofil" + currentid);
+    const ref = database.ref("lesprofiles").child("unprofil" + currentid);
     ref.once("value", (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -145,7 +145,7 @@ export default function MyProfil({ route }) {
   
     console.log("Image URL:", imageLink); // Check if the image URL is correct
   
-    const ref_unprofil = database.ref("lesprofiles/unprofil" + currentid);
+    const ref_unprofil = database.ref("lesprofiles").child("unprofil" + currentid);
     ref_unprofil
       .set({
         id: currentid,

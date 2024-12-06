@@ -5,7 +5,7 @@ import ListProfil from './Home/ListProfil';
 import Groupe from './Home/Groupe';
 import MyProfils from './Home/MyProfil';
 import Chat from './Chat'; 
-
+import ChatGroup from './Home/ChatGroup'; 
 export default function Acceuil(props) {
   const Tab = createMaterialBottomTabNavigator();
   const { currentid } = props.route.params;
@@ -28,7 +28,7 @@ export default function Acceuil(props) {
         }}
       />
       <Tab.Screen
-        name="Group"
+        name="Groupe"
         component={Groupe}
         initialParams={{ currentid: currentid }}
         options={{
@@ -55,6 +55,17 @@ export default function Acceuil(props) {
         initialParams={{ currentid: currentid }}
         options={{
           tabBarLabel: 'Chat',
+          tabBarIcon: ({ color }) => (
+            <Icon name="chat" color={color} size={24} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="ChatGroup"
+        component={ChatGroup}
+        initialParams={{ currentid: currentid }}
+        options={{
+          tabBarLabel: 'ChatGroup',
           tabBarIcon: ({ color }) => (
             <Icon name="chat" color={color} size={24} />
           ),
