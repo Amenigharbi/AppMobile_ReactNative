@@ -41,32 +41,24 @@ export default function MyProfil({ route }) {
       const blob = await response.blob();
       const arraybuffer = await new Response(blob).arrayBuffer();
 
-      // Upload image to Supabase storage
-      const { data, error } = await supabase.storage
-        .from("ProfileImages")
-        .upload($`{currentid}`.jpg, arraybuffer, { upsert: true });
+      const {  error } = await supabase.storage
+        .from('ProfileImages')
+        .upload(`${currentid}.jpg`, arraybuffer, { upsert: true });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      // Get public URL for the uploaded file
-      const { publicURL, error: urlError } = supabase.storage
-        .from("ProfileImages")
-        .getPublicUrl($`{currentid}`.jpg);
+      const { data, error: urlError } = supabase.storage
+        .from('ProfileImages')
+        .getPublicUrl(`${currentid}.jpg`);
 
-      if (urlError) {
-        throw urlError;
-      }
+      if (urlError) throw urlError;
 
-      return publicURL; // Return the public URL of the uploaded image
+      return data.publicUrl;
     } catch (error) {
-      Alert.alert("Error", "Image upload failed.");
-      console.error(error);
+      Alert.alert('Error', 'Image upload failed.');
       return null;
     }
   };
-
   const requestPermissions = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -133,7 +125,7 @@ export default function MyProfil({ route }) {
     console.log('Save button clicked'); 
     if (!nom || !pseudo || !telephone) {
       Alert.alert("Missing Fields", "Please fill out all fields before saving.");
-      console.log("Fields missing"); // If the fields are empty
+      console.log("Fields missing"); 
       return;
     }
   
@@ -143,7 +135,7 @@ export default function MyProfil({ route }) {
       return;
     }
   
-    console.log("Image URL:", imageLink); // Check if the image URL is correct
+    console.log("Image URL:", imageLink); 
   
     const ref_unprofil = database.ref("lesprofiles").child("unprofil" + currentid);
     ref_unprofil
@@ -157,10 +149,6 @@ export default function MyProfil({ route }) {
       .then(() => {
         Alert.alert("Success", "Profile saved successfully.");
         console.log("Profile saved successfully");
-        setNom("");
-        setPseudo("");
-        setTelephone("");
-        seturi_local_img("../../assets/3135823.png"); 
       })
       .catch((error) => {
         Alert.alert("Error", error.message);
@@ -215,30 +203,7 @@ export default function MyProfil({ route }) {
       />
     
     <TouchableHighlight
-  onPress={() => {
-    // Check if any required field is empty
-    if (!nom || !pseudo || !telephone) {
-      Alert.alert("Missing Fields", "Please fill out all fields before saving.");
-      return;  // Exit the function if fields are missing
-    }
-
-    // Proceed to save the profile if all fields are filled
-    const ref_unprofil = database.ref("lesprofiles/unprofil" + currentid);
-    ref_unprofil
-      .set({
-        id: currentid,
-        nom,
-        pseudo,
-        telephone,
-        image: uri_local_img || "http://dummyimage.com/600x400/000/fff",  // Use default image if no image selected
-      })
-      .then(() => {
-        Alert.alert("Success", "Profile saved successfully.");
-      })
-      .catch((error) => {
-        Alert.alert("Error", error.message);
-      });
-  }}
+  onPress={handleSave}
   activeOpacity={0.5}
   underlayColor="#DDDDDD"
   style={styles.saveButton}
@@ -295,3 +260,4 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
 }); 
+

@@ -164,7 +164,6 @@ export default function Chat(props) {
     item.body
   )}
 </Text>
-        {/* Afficher "Vu" ou "Non lu" */}
         {item.isRead ? (
           <Text style={styles.messageStatus}>Vu</Text>
         ) : (
@@ -221,7 +220,6 @@ export default function Chat(props) {
           />
         )}
 
-        {/* Typing Indicator */}
         {otherUserTyping && (
           <View style={styles.typingIndicator}>
             <Text style={styles.typingText}>{currentUser.nom} est en train de taper...</Text>
