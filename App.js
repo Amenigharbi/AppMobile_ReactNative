@@ -4,6 +4,7 @@ import Authentification from "./screens/Authentification";
 import Acceuil from "./screens/Acceuil";
 import NewUser from "./screens/NewUser";
 import Chat from "./screens/Chat";
+import ChaGroup from "./screens/Home/ChatGroup";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,7 @@ export default function App() {
         />
         <Stack.Screen name="Acceuil" component={Acceuil} />
         <Stack.Screen name="Chat" component={Chat} />
+        <Stack.Screen name="ChatGroup" component={ChaGroup} />
       </Stack.Navigator>
     </NavigationContainer>
   );

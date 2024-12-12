@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import firebase from "../../Config"; 
+import { Ionicons } from '@expo/vector-icons'; // Importer Ionicons
 
 const database = firebase.database();
 
@@ -24,42 +25,67 @@ export default function ListProfil({ route, navigation }) {
       Alert.alert("Erreur", "L'ID de l'utilisateur actuel est manquant.");
       return;
     }
-
+  
+    const statusRef = database.ref(`status/${currentid}`);
+    statusRef.set({ online: true });
+    statusRef.onDisconnect().set({ online: false });
+  
     const refProfiles = database.ref("lesprofiles");
-    refProfiles.once("value", (snapshot) => {
+    refProfiles.on("value", (snapshot) => {
       let usersList = [];
       snapshot.forEach((child) => {
         const profile = child.val();
         usersList.push(profile);
       });
-
-      // Group users into sections
-      const groupedUsers = [
-        {
-          title: "Autres utilisateurs",
-          data: usersList.filter((user) => user.id !== currentid),
-        },
-        {
-          title: "Utilisateur connecté",
-          data: usersList.filter((user) => user.id === currentid),
-        },
-      ];
-
-      setSections(groupedUsers);
-      setLoading(false);
+  
+      const statusRef = database.ref("status");
+      statusRef.once("value", (statusSnapshot) => {
+        const onlineUsers = [];
+        const offlineUsers = [];
+  
+        usersList.forEach((user) => {
+          const userStatus = statusSnapshot.child(user.id).val();
+          if (userStatus?.online) {
+            onlineUsers.push(user);
+          } else {
+            offlineUsers.push(user);
+          }
+        });
+  
+        const groupedUsers = [
+          {
+            title: "Autres utilisateurs",
+            data: offlineUsers.filter((user) => user.id !== currentid),
+          },
+          {
+            title: "Utilisateurs connectés",
+            data: onlineUsers,
+          },
+        ];
+  
+        setSections(groupedUsers);
+        setLoading(false);
+      });
     });
-
-    return () => refProfiles.off("value");
+  
+    return () => {
+      refProfiles.off("value");
+      statusRef.off();
+    };
   }, [currentid]);
 
   const handlePressProfile = (user) => {
     const currentUser = sections
-      .find((section) => section.title === "Utilisateur connecté")
-      ?.data?.[0];
+      .flatMap((section) => section.data)
+      .find((u) => u.id === currentid); // Obtenir l'utilisateur actuel
+  
     navigation.navigate("Chat", {
-      currentUser,
-      secondUser: user,
+      currentUser, // Utilisateur actuel
+      secondUser: user, // Utilisateur sélectionné
     });
+  
+    console.log("Utilisateur actuel:", currentUser);
+    console.log("Utilisateur sélectionné:", user);
   };
 
   const handleLogout = () => {
@@ -73,9 +99,8 @@ export default function ListProfil({ route, navigation }) {
   };
 
   const renderUser = ({ item }) => {
-    // Define online/offline status (this can be dynamically set based on user activity)
-    const isOnline = item.id === currentid ? true : false;  // Example logic
-
+    const isOnline = sections.find(section => section.title === "Utilisateurs connectés")?.data.includes(item);
+  
     return (
       <TouchableOpacity
         onPress={() => handlePressProfile(item)}
@@ -107,7 +132,6 @@ export default function ListProfil({ route, navigation }) {
       source={require("../../assets/back.jpg")}
       style={styles.container}
     >
-      <Text style={styles.title}>Commencer à chatter avec</Text>
 
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
@@ -120,8 +144,9 @@ export default function ListProfil({ route, navigation }) {
         />
       )}
 
+      {/* Remplacer le bouton de déconnexion par une icône */}
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-        <Text style={styles.logoutButtonText}>Déconnexion</Text>
+        <Ionicons name="log-out-outline" size={30} color="white" />
       </TouchableOpacity>
     </ImageBackground>
   );
@@ -196,17 +221,19 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   logoutButton: {
-    marginTop: 20,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    backgroundColor: "#E67E22", 
-    borderRadius: 30,
-    elevation: 3,
+    position: 'absolute', // Permet de le positionner précisément
+    top: 40, // Distance du haut
+    right: 20, // Distance de la droite
+    backgroundColor: '#e74c3c', // Couleur rouge
+    width: 50, // Largeur du bouton
+    height: 50, // Hauteur du bouton
+    borderRadius: 25, // Forme circulaire
+    justifyContent: 'center', // Centre le contenu verticalement
+    alignItems: 'center', // Centre le contenu horizontalement
+    shadowColor: '#000', // Ajout d'une ombre
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  logoutButtonText: {
-    fontSize: 18,
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
+  
 });

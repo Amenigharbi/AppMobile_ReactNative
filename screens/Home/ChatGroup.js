@@ -188,3 +188,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+/*kol user connecté nzid + group fil page groupe thez page o5ra , chat paget wahadehom , bouton deconnecté min fou9 fil paget kol , bouton appelé  */

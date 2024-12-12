@@ -2,7 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect, useRef } from "react";
 import { ImageBackground, StyleSheet, Text, View, TouchableOpacity, BackHandler, Alert, FlatList } from "react-native";
 import { Button, TextInput } from "react-native-paper";
-import firebase from "firebase/compat/app";
+import firebase from "../Config";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 

@@ -14,15 +14,12 @@ import {
   Alert,
   Linking,
 } from "react-native";
-import firebase from "firebase/compat/app";
-import "firebase/compat/database";
+import firebase from "../Config";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
 
 export default function Chat(props) {
- 
-
   const currentUser = props.route.params?.currentUser;
   const secondUser = props.route.params?.secondUser;
 
@@ -38,6 +35,7 @@ export default function Chat(props) {
   const [chatMessages, setChatMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [isCurrentUserTyping, setIsCurrentUserTyping] = useState(false); // Etat pour vérifier si l'utilisateur actuel tape
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   
   const db = firebase.database();
@@ -51,7 +49,6 @@ export default function Chat(props) {
   const typingRef = db.ref("typing").child(discussionRef.key);
 
   const handleSend = (type = "text", content) => {
-    // Check if the content is empty
     if (!content || content.trim().length === 0) {
       Alert.alert("Erreur", "Vous ne pouvez pas envoyer de message vide.");
       return; 
@@ -64,40 +61,55 @@ export default function Chat(props) {
       time: new Date().toISOString(),
       sender: currentUser.id,
       receiver: secondUser.id,
-      isRead: false,
+      isRead: false, // Messages marqués comme non lus
     };
   
     discussionRef.child(key).set(messageData);
-    setMessage("");  
-    setIsTyping(false); 
-    typingRef.set(false);  
+    setMessage("");
+    setIsCurrentUserTyping(false); // Quand un message est envoyé, l'utilisateur actuel n'est plus en train de taper
+    typingRef.set(false); // Effacer l'indicateur de saisie
   };
-  
 
   const handleTyping = (text) => {
     setMessage(text);
-    setIsTyping(text.length > 0);
-    typingRef.set(text.length > 0);
+    setIsCurrentUserTyping(text.length > 0); // Utilisateur actuel tape
+    setIsTyping(text.length > 0); // Indicateur de saisie
+    typingRef.set(text.length > 0); // Informer Firebase que l'utilisateur tape
+  };
+
+  const handleCall = () => {
+    if (!secondUser || !secondUser.telephone) {
+      Alert.alert("Erreur", "Numéro de téléphone indisponible.");
+      return;
+    }
+    const phoneNumber = `tel:${secondUser.telephone}`;
+    Linking.openURL(phoneNumber).catch((err) =>
+      Alert.alert("Erreur", "Impossible d'ouvrir le composeur téléphonique.")
+    );
   };
 
   const handleSendLocation = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission d'accès à la localisation refusée.");
-      return;
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        alert("Permission refusée. Impossible d'envoyer la localisation.");
+        return;
+      }
+  
+      const location = await Location.getCurrentPositionAsync({});
+      const locationMessageData = {
+        body: `https://www.google.com/maps?q=${location.coords.latitude},${location.coords.longitude}`,
+        time: new Date().toISOString(),
+        sender: currentUser.id,
+        receiver: secondUser.id,
+        type: "location",
+      };
+  
+      const key = discussionRef.push().key;
+      await discussionRef.child(key).set(locationMessageData);
+    } catch (error) {
+      alert("Erreur lors de l'envoi de la localisation : " + error.message);
     }
-
-    const location = await Location.getCurrentPositionAsync({});
-    const locationMessageData = {
-      body: `https://www.google.com/maps?q=${location.coords.latitude},${location.coords.longitude}`,
-      time: new Date().toISOString(),
-      sender: currentUser.id,
-      receiver: secondUser.id,
-      type: "location",
-    };
-
-    const key = discussionRef.push().key;
-    discussionRef.child(key).set(locationMessageData);
   };
 
   const pickImage = async () => {
@@ -109,19 +121,18 @@ export default function Chat(props) {
       handleSend("image", result.assets[0].uri);  
     }
   };
-  
 
   const renderItem = ({ item, index }) => {
     if (!item) return null;
-
+  
     const senderUser = item.sender === currentUser.id ? currentUser : secondUser;
     const messageTime = new Date(item.time);
-
+  
     const formattedTime = `${messageTime.getDate()} ${messageTime.toLocaleString("default", { month: "short" })} ${messageTime.getFullYear()}`;
     const formattedHour = `${messageTime.getHours()}:${messageTime.getMinutes() < 10 ? "0" + messageTime.getMinutes() : messageTime.getMinutes()}`;
-
+  
     const showDateSeparator = index === 0 || new Date(chatMessages[index - 1].time).toDateString() !== messageTime.toDateString();
-
+  
     return (
       <View style={styles.messageContainer}>
         {showDateSeparator && (
@@ -129,8 +140,9 @@ export default function Chat(props) {
             <Text style={styles.dateText}>{formattedTime}</Text>
           </View>
         )}
+        
         <Animated.View
-          style={[
+          style={[ 
             item.sender === currentUser.id
               ? styles.currentUserMessageContainer
               : styles.secondUserMessageContainer,
@@ -143,70 +155,53 @@ export default function Chat(props) {
             <Text style={styles.messageTime}>{formattedHour}</Text>
           </View>
           <Text style={styles.messageText}>
-            
-  {item.type === "file" ? (
-     <View>
-     {item.body.endsWith(".pdf") ? (
-       <TouchableOpacity onPress={() => Linking.openURL(item.body)}>
-         <Text style={{ color: "blue" }}>Ouvrir le PDF</Text>
-       </TouchableOpacity>
-     ) : (
-       <Text style={{ color: "blue" }}>Fichier partagé</Text>
-     )}
-   </View>
-  ) : item.type === "location" ? (
-    <Text style={{ color: "blue" }} onPress={() => Linking.openURL(item.body)}>
-      Localisation partagée
-    </Text>
-  ) : item.type === "image" ? (
-    <Image source={{ uri: item.body }} style={styles.messageImage} resizeMode="contain" />
-  ) : (
-    item.body
-  )}
-</Text>
-        {item.isRead ? (
-          <Text style={styles.messageStatus}>Vu</Text>
-        ) : (
-          <Text style={styles.messageStatus}>Non lu</Text>
-        )}
-      </Animated.View>
-    </View>
-  );
-};
-  
+            {item.type === "location" ? (
+              <Text style={{ color: "blue" }} onPress={() => Linking.openURL(item.body)}>
+                Localisation partagée
+              </Text>
+            ) : item.type === "image" ? (
+              <Image source={{ uri: item.body }} style={styles.messageImage} resizeMode="contain" />
+            ) : (
+              item.body
+            )}
+          </Text>
+          <Text style={styles.messageStatus}>
+            {item.isRead ? "Vu" : "Non lu"}
+          </Text>
+        </Animated.View>
+      </View>
+    );
+  };
 
   useEffect(() => {
-    
     const onValueChange = discussionRef.on("value", (snapshot) => {
       const messages = [];
       snapshot.forEach((msgSnapshot) => {
         const message = msgSnapshot.val();
-      // Si le destinataire est l'utilisateur actuel et que le message n'a pas été vu, on le marque comme vu
-      if (message.receiver === currentUser.id && !message.isRead) {
-        discussionRef.child(msgSnapshot.key).update({ isRead: true });
-      }
-      messages.push(message);
-    });
-    setChatMessages(messages);
-    setLoading(false);
-  });
-    const onTypingChange = typingRef.on("value", (snapshot) => {
-      const typingStatus = snapshot.val();
-      setOtherUserTyping(typingStatus === true);
+        messages.push(message);
+
+        if (message.receiver === currentUser.id && !message.isRead) {
+          discussionRef.child(msgSnapshot.key).update({ isRead: true });
+        }
+      });
+      setChatMessages(messages);
+      setLoading(false);
     });
 
     return () => {
-      discussionRef.off("value", onValueChange);
-      typingRef.off("value", onTypingChange);
+      discussionRef.off("value");
     };
-  }, [discussionRef, typingRef]);
+  }, [discussionRef, currentUser.id]);
 
   return (
     <View style={styles.container}>
       <ImageBackground style={styles.background} source={require("../assets/ciel.jpg")}>
-        <StatusBar style="light" backgroundColor="black" />
+        <StatusBar barStyle="light" />
         <View style={styles.headerContainer}>
-          <Text style={styles.header}>Chat avec {secondUser.nom}</Text>
+          <Text style={styles.header}>{secondUser.nom}</Text>
+          <TouchableOpacity style={styles.callButton} onPress={handleCall}>
+            <Ionicons name="call" size={24} color="white" />
+          </TouchableOpacity>
         </View>
 
         {loading ? (
@@ -220,9 +215,9 @@ export default function Chat(props) {
           />
         )}
 
-        {otherUserTyping && (
+        {otherUserTyping && !isCurrentUserTyping && (
           <View style={styles.typingIndicator}>
-            <Text style={styles.typingText}>{currentUser.nom} est en train de taper...</Text>
+            <Text style={styles.typingText}>{secondUser.nom} est en train de taper...</Text>
           </View>
         )}
 
@@ -250,6 +245,8 @@ export default function Chat(props) {
   );
 }
 
+
+
 const styles = StyleSheet.create({
   messageContainer: {
     padding: 15,
@@ -269,8 +266,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
-    marginTop: 30,
   },
   background: {
     flex: 1,
@@ -281,14 +276,28 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     padding: 20,
-    backgroundColor: "#8E7C4B", 
     borderBottomWidth: 1,
     borderBottomColor: "#B8A68D", 
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
+    borderRadius: 50,
   },
+  callButton: {
+    position: 'absolute',
+    right: 20,
+    top: 20,
+    backgroundColor: '#28A745', // Green color for call
+    padding: 10,
+    borderRadius: 50,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  
   header: {
     color: "#E67E22", 
     fontSize: 26,
@@ -339,7 +348,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   secondUserMessageContainer: {
-    backgroundColor: "#8E7C4B", 
+    backgroundColor: "#fff", 
     alignSelf: "flex-start",
     borderRadius: 20,
     shadowColor: "#000",
@@ -379,7 +388,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     padding: 12,
-    backgroundColor: "#8E7C4B", 
+    backgroundColor: "#fff", 
     borderTopWidth: 1,
     borderTopColor: "#BDC3C7", 
     borderBottomLeftRadius: 30,
